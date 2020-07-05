@@ -1,9 +1,11 @@
 package com.springboot.rest.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Service;
 
 import com.springboot.rest.dto.AirCraftDto;
@@ -41,10 +43,56 @@ public class UserService {
 
 		// Task 6: add +10 to Airinformation last array value for all user
 		userList = displayAirInfoForLastArrayUpdatedValue(userList);
+		
+		// Task 7: extract airInformation last array values
+		   //created logic in two ways (1. with predifined class, 2. with internal logic)
+		userList = extractAirInformationLastValues(userList);
 
 		return userList;
 	}
 
+	// with predifined  ArrayUtil class
+	/*private List<UserDto> extractAirInformationLastValues(List<UserDto> userList) {
+		userList.stream().map(userDto->{
+			ShippedInfoDto[] shippedInfo = userDto.getProductDto().getShippedInfoDto();
+			for(int i=0; i<shippedInfo.length; i++) {
+				AirCraftDto[] airCraft = shippedInfo[i].getAirCraftDto();
+				for(int j=0; j<airCraft.length; j++) {
+					if(j==airCraft.length-1) {
+						break;
+					}
+					airCraft = ArrayUtils.remove(airCraft, 0);
+				}
+				shippedInfo[i].setAirCraftDto(airCraft);
+			}
+			userDto.getProductDto().setShippedInfoDto(shippedInfo);
+			return userDto;
+		}).collect(Collectors.toList());
+		return userList;
+	}*/
+	
+	// with conversion of list and array logic 
+	private List<UserDto> extractAirInformationLastValues(List<UserDto> userList) {
+		userList.stream().map(userDto->{
+			ShippedInfoDto[] shippedInfo = userDto.getProductDto().getShippedInfoDto();
+			for(int i=0; i<shippedInfo.length; i++) {
+				AirCraftDto[] airCraft = shippedInfo[i].getAirCraftDto();
+				// below line remove unsopperted method error
+				List<AirCraftDto> list = new ArrayList<AirCraftDto>(Arrays.asList(airCraft));
+				int temp = list.size();
+				for(int j=0; j<temp-1; j++) {
+					list.remove(0);
+					airCraft = new AirCraftDto[list.size()];
+					airCraft = list.toArray(airCraft);
+				}
+				shippedInfo[i].setAirCraftDto(airCraft);
+			}
+			userDto.getProductDto().setShippedInfoDto(shippedInfo);
+			return userDto;
+		}).collect(Collectors.toList());
+		return userList;
+	}
+	
 	private List<UserDto> displayAirInfoForLastArrayUpdatedValue(List<UserDto> userList) {
 		userList.stream().map(userDto -> {
 			ProductDto pDto = userDto.getProductDto();
@@ -259,6 +307,7 @@ public class UserService {
 		// with setter and getters
 		AirCraftDto airCraftDto1 = new AirCraftDto();
 		AirCraftDto airCraftDto2 = new AirCraftDto();
+		
 		ShippedInfoDto shippedDto1 = new ShippedInfoDto();
 		ShippedInfoDto shippedDto2 = new ShippedInfoDto();
 		ShippedInfoDto shippedDto3 = new ShippedInfoDto();
@@ -266,8 +315,10 @@ public class UserService {
 		airCraftDto1.setName("jet-airways1");
 		airCraftDto2.setNumber(102);
 		airCraftDto2.setName("Indian-airways1");
+		
 		airCraft[0] = airCraftDto1;
 		airCraft[1] = airCraftDto2;
+		
 		shippedDto1.setShippedId("1111");
 		shippedDto1.setShippedValue(1001);
 		shippedDto1.setAirCraftDto(airCraft);
